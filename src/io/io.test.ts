@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_FORMAT, DEFAULT_SETTINGS } from "../domain/settings";
 import type { TableDoc } from "../domain/types";
 import { buildDoc, inferColumnTypes } from "./build";
-import { DEFAULT_TEXT_EXPORT, exportText } from "./exporters";
+import { DEFAULT_TEXT_EXPORT, exportRecord, exportText, recordTokens } from "./exporters";
 import { parseText } from "./importers";
 import { defaultNotNull, exportSql, quoteIdent } from "./sql";
 import { DEFAULT_PARSE_OPTIONS, TEXT_FORMATS } from "./types";
@@ -97,5 +97,44 @@ describe("sql", () => {
     expect(sql).toContain("score float4");
     expect(sql).toContain("'He said \"hi\", ok', 42, 42.0, TRUE, '1998-04-20', '1919-09-19T09:18:00'");
     expect(sql).toContain("(NULL, NULL, NULL, NULL, NULL, NULL)");
+  });
+});
+
+describe("exportRecord", () => {
+  const row = doc.rows[0]!;
+  it("json round-trips as one object", () => {
+    const text = exportRecord("json", doc.columns, row);
+    expect(text.startsWith('{\n  "name": ')).toBe(true);
+    const raw = parseText("json", "t", text, DEFAULT_PARSE_OPTIONS);
+    expect(
+      buildDoc(raw, inferColumnTypes(raw, "stringify"), "stringify").doc.columns.map((c) => c.type),
+    ).toEqual(doc.columns.map((c) => c.type));
+  });
+  it("yaml and edn parse back", () => {
+    for (const f of ["yaml", "edn"] as const) {
+      const raw = parseText(f, "t", exportRecord(f, doc.columns, row), DEFAULT_PARSE_OPTIONS);
+      expect(raw.rows.length).toBe(1);
+      expect(raw.columns).toEqual(doc.columns.map((c) => c.name));
+    }
+    expect(exportRecord("edn", doc.columns, row)).toContain("\n :count 42\n");
+    expect(exportRecord("yaml", doc.columns, doc.rows[2]!)).toContain("count: null");
+  });
+});
+
+describe("recordTokens", () => {
+  it("tags values with their column type and nulls separately", () => {
+    const tokens = recordTokens("edn", doc.columns, doc.rows[1]!);
+    const values = tokens.filter((t) => t.kind !== "punct" && t.kind !== "key");
+    expect(values.map((t) => [t.text, t.kind, t.type])).toEqual([
+      ['"true"', "value", "string"],
+      ["-3", "value", "int"],
+      ["4.25", "value", "float"],
+      ["false", "value", "bool"],
+      ["nil", "null", undefined],
+      ["nil", "null", undefined],
+    ]);
+    expect(tokens.filter((t) => t.kind === "key").map((t) => t.text)).toEqual(
+      doc.columns.map((c) => `:${c.name}`).map((k) => (k === ":at time" ? '"at time"' : k)),
+    );
   });
 });

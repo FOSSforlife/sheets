@@ -332,7 +332,8 @@ export class GridController {
     const row = this.doc.rows[ri];
     const col = this.doc.columns[ci];
     if (!row || !col) return;
-    void this.table.scrollToRow(row.id, "nearest", false).catch(() => {});
+    // Tabulator logs a warning for unknown rows (e.g. mid-rebuild), so only scroll to rows it has.
+    if (this.hasRow(row.id)) void this.table.scrollToRow(row.id, "nearest", false).catch(() => {});
     const holder = this.el.querySelector(".tabulator-tableholder") as HTMLElement | null;
     const colEl = this.table.getColumn(col.id)?.getElement();
     if (!holder || !colEl) return;
@@ -343,11 +344,17 @@ export class GridController {
     else if (right > holder.scrollLeft + holder.clientWidth) holder.scrollLeft = right - holder.clientWidth;
   }
 
+  /** Silent row lookup (Tabulator's public `getRow` logs a warning when the row is missing). */
+  private hasRow(id: string): boolean {
+    return !!(this.table as any).rowManager?.findRow(id);
+  }
+
   /** Viewport rect of a cell (for positioning the editor overlay). */
   cellRect(ri: number, ci: number): DOMRect | null {
     const row = this.doc.rows[ri];
     const col = this.doc.columns[ci];
     if (!row || !col) return null;
+    if (!this.hasRow(row.id)) return null;
     const el = this.table.getRow(row.id)?.getCell(col.id)?.getElement();
     return el?.isConnected ? el.getBoundingClientRect() : null;
   }

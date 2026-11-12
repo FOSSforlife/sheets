@@ -1,5 +1,6 @@
 import { type RouteSectionProps, useLocation, useNavigate } from "@solidjs/router";
 import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import { RowInspector } from "./components/inspector/RowInspector";
 import { Sidebar } from "./components/sidebar/Sidebar";
 import { TabBar } from "./components/tabs/TabBar";
 import { DialogHost } from "./components/ui/DialogHost";
@@ -28,6 +29,7 @@ import {
   openTable,
   pruneTabs,
   SETTINGS_TAB,
+  toggleInspector,
   toggleSidebar,
   ui,
 } from "./stores/ui";
@@ -64,6 +66,7 @@ function useGlobalShortcuts(): void {
     prevTab: () => cycleTab(-1),
     closeTab: () => ui.activeTab && closeTab(ui.activeTab),
     toggleSidebar,
+    toggleInspector,
     openSettings,
     newTable: () => {
       const db = activeDatabaseId();
@@ -164,7 +167,12 @@ export function App(props: RouteSectionProps) {
       </Show>
       <main class="flex min-w-0 flex-1 flex-col">
         <TabBar />
-        <div class="min-h-0 flex-1">{props.children}</div>
+        <div class="flex min-h-0 flex-1">
+          <div class="min-w-0 flex-1">{props.children}</div>
+          <Show when={activeTableId()} keyed>
+            {(tableId) => <RowInspector tableId={tableId} />}
+          </Show>
+        </div>
       </main>
       <Show when={dragging()}>
         <div class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-accent/10 ring-4 ring-accent/50 ring-inset">

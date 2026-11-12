@@ -181,6 +181,52 @@ body.resizing {
   .tree-row:focus-within .row-actions {
     @apply flex;
   }
+  .inspector-resizer {
+    @apply absolute top-0 -left-1 z-10 h-full w-2 cursor-col-resize hover:bg-accent/30;
+  }
+  .segmented {
+    @apply inline-flex shrink-0 rounded border border-line bg-bg p-0.5;
+  }
+  .segmented > button {
+    @apply rounded-sm px-1.5 py-0.5 text-xs font-medium text-muted hover:text-fg;
+  }
+  .segmented > button[aria-pressed="true"] {
+    @apply bg-accent/15 text-fg;
+  }
+  .inspector-code {
+    @apply m-0 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words select-text;
+  }
+  .inspector-code {
+    color: var(--muted);
+  }
+  .tok-key {
+    @apply font-semibold text-fg;
+  }
+  .tok-null {
+    @apply italic;
+    color: var(--muted);
+  }
+  .tok-value {
+    color: var(--fg);
+  }
+  .tok-string {
+    color: var(--type-string);
+  }
+  .tok-int {
+    color: var(--type-int);
+  }
+  .tok-float {
+    color: var(--type-float);
+  }
+  .tok-bool {
+    color: var(--type-bool);
+  }
+  .tok-date {
+    color: var(--type-date);
+  }
+  .tok-datetime {
+    color: var(--type-datetime);
+  }
   .sidebar-resizer {
     @apply absolute top-0 -right-1 z-10 h-full w-2 cursor-col-resize hover:bg-accent/30;
   }

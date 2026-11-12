@@ -24,6 +24,9 @@ export interface UiState {
   expandedDatabases: Record<string, boolean>;
   trashExpanded: boolean;
   cursors: Record<string, CursorPos>;
+  inspectorOpen: boolean;
+  inspectorWidth: number;
+  inspectorFormat: "json" | "yaml" | "edn";
 }
 
 export type KeymapOverrides = Record<string, string | null>;

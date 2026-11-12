@@ -18,6 +18,8 @@ export { default as FileUp } from "lucide-solid/icons/file-up";
 export { default as FolderInput } from "lucide-solid/icons/folder-input";
 export { default as PanelLeftClose } from "lucide-solid/icons/panel-left-close";
 export { default as PanelLeftOpen } from "lucide-solid/icons/panel-left-open";
+export { default as PanelRightClose } from "lucide-solid/icons/panel-right-close";
+export { default as PanelRightOpen } from "lucide-solid/icons/panel-right-open";
 export { default as Pencil } from "lucide-solid/icons/pencil";
 export { default as Plus } from "lucide-solid/icons/plus";
 export { default as RotateCcw } from "lucide-solid/icons/rotate-ccw";

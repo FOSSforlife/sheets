@@ -1,7 +1,7 @@
 import Papa from "papaparse";
 import { canonicalFloat } from "../domain/numbers";
 import type { FormatSettings } from "../domain/settings";
-import type { CellValue, Column, TableDoc } from "../domain/types";
+import type { CellValue, Column, ColumnType, Row, TableDoc } from "../domain/types";
 import { formatDisplay } from "../domain/values";
 import { ednString, isKeywordName } from "./edn";
 import type { TextFormat } from "./types";
@@ -197,4 +197,62 @@ export function exportText(
     case "ednl":
       return exportEdnl(doc, opts);
   }
+}
+
+// ---- single records (row inspector) ----
+
+export type RecordFormat = "json" | "yaml" | "edn";
+
+/** A piece of a rendered record. Values carry their column type so the UI can color them. */
+export interface RecordToken {
+  text: string;
+  kind: "punct" | "key" | "value" | "null";
+  type?: ColumnType;
+}
+
+/**
+ * One row as a pretty-printed object, as tokens. Uses the same value encoding as the file exports
+ * (floats keep `.0`, dates are ISO / YAML timestamps / `#inst`). Nulls are included.
+ */
+export function recordTokens(format: RecordFormat, columns: Column[], row: Row): RecordToken[] {
+  const punct = (text: string): RecordToken => ({ text, kind: "punct" });
+  const key = (text: string): RecordToken => ({ text, kind: "key" });
+  const value = (c: Column, v: CellValue, text: string): RecordToken =>
+    v === null ? { text, kind: "null" } : { text, kind: "value", type: c.type };
+
+  const entries: Entry[] = columns.map((c) => [c, row.cells[c.id] ?? null]);
+  if (!entries.length) return [punct("{}")];
+  const out: RecordToken[] = [];
+  switch (format) {
+    case "json":
+      out.push(punct("{\n"));
+      entries.forEach(([c, v], i) => {
+        out.push(punct("  "), key(JSON.stringify(c.name)), punct(": "), value(c, v, jsonScalar(c, v)));
+        out.push(punct(i < entries.length - 1 ? ",\n" : "\n"));
+      });
+      out.push(punct("}"));
+      break;
+    case "yaml":
+      entries.forEach(([c, v], i) => {
+        out.push(key(yamlString(c.name)), punct(": "), value(c, v, yamlScalar(c, v)));
+        if (i < entries.length - 1) out.push(punct("\n"));
+      });
+      break;
+    case "edn":
+      out.push(punct("{"));
+      entries.forEach(([c, v], i) => {
+        if (i > 0) out.push(punct("\n "));
+        out.push(key(ednKey(c.name)), punct(" "), value(c, v, ednScalar(c, v)));
+      });
+      out.push(punct("}"));
+      break;
+  }
+  return out;
+}
+
+/** One row as pretty-printed text (exactly the concatenated tokens). */
+export function exportRecord(format: RecordFormat, columns: Column[], row: Row): string {
+  return recordTokens(format, columns, row)
+    .map((t) => t.text)
+    .join("");
 }

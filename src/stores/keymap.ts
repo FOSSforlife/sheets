@@ -22,6 +22,7 @@ export type ActionId =
   | "prevTab"
   | "closeTab"
   | "toggleSidebar"
+  | "toggleInspector"
   | "openSettings"
   | "newTable"
   | "importTable"
@@ -74,6 +75,12 @@ export const ACTIONS: ActionDef[] = [
   { id: "prevTab", label: "Previous tab", group: "Navigation", defaultBinding: "Alt+[" },
   { id: "closeTab", label: "Close tab", group: "Navigation", defaultBinding: "Alt+W" },
   { id: "toggleSidebar", label: "Toggle sidebar", group: "Navigation", defaultBinding: "Mod+\\" },
+  {
+    id: "toggleInspector",
+    label: "Toggle row preview",
+    group: "Navigation",
+    defaultBinding: "Mod+Shift+\\",
+  },
   { id: "openSettings", label: "Open settings", group: "Navigation", defaultBinding: "Mod+," },
   { id: "newTable", label: "New table", group: "Files", defaultBinding: null },
   { id: "importTable", label: "Import table…", group: "Files", defaultBinding: null },

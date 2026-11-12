@@ -14,6 +14,9 @@ const DEFAULTS: UiState = {
   expandedDatabases: {},
   trashExpanded: false,
   cursors: {},
+  inspectorOpen: true,
+  inspectorWidth: 340,
+  inspectorFormat: "json",
 };
 
 const [ui, setUi] = createStore<UiState>({ ...DEFAULTS, ...uiRepo.load() });
@@ -100,6 +103,10 @@ export function setCursor(tableId: string, pos: CursorPos): void {
 
 export function toggleSidebar(): void {
   setUi("sidebarCollapsed", (c) => !c);
+}
+
+export function toggleInspector(): void {
+  setUi("inspectorOpen", (o) => !o);
 }
 
 export function setDatabaseExpanded(dbId: string, expanded: boolean): void {

@@ -3,6 +3,7 @@ import { unwrap } from "solid-js/store";
 import { openMenuAt, openMenuBelow } from "../components/ui/menu";
 import { formatForEdit } from "../domain/values";
 import { type ActionId, registerAction } from "../stores/keymap";
+import { clearRowSelection, setRowSelection } from "../stores/selection";
 import { settings } from "../stores/settings";
 import type { TableSession } from "../stores/tableSession";
 import { reportErrors, toast } from "../stores/toasts";
@@ -242,6 +243,7 @@ export function GridView(props: { session: TableSession }) {
       onColumnMoved: (id, to) => actions.moveColumn(id, to),
       onColumnResized: (id, w) => actions.resizeColumn(id, w),
       onSelectionChange: (r) => {
+        setRowSelection(session.id, r.r0, r.r1);
         const row = doc().rows[r.r0];
         const col = doc().columns[r.c0];
         if (row && col) setCursor(session.id, { rowId: row.id, columnId: col.id });
@@ -282,6 +284,7 @@ export function GridView(props: { session: TableSession }) {
       ro.disconnect();
       holder?.removeEventListener("scroll", onScroll);
       session.editing = false;
+      clearRowSelection(session.id);
       reportErrors(() => grid.destroy());
     });
   });
