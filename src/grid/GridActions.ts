@@ -182,6 +182,18 @@ export class GridActions {
     this.grid.setSelection({ r0: index, c0: r.c0, r1: index + count - 1, c1: r.c0 });
   }
 
+  /** Adds an empty row at the bottom and moves the cursor there (same column). */
+  appendRow(): void {
+    const index = this.doc.rows.length;
+    this.session.apply("Add row", insertRowsOps(index).ops);
+    this.select(index, normalizeRange(this.selection()).c0);
+  }
+
+  /** Adds a column at the far right and moves the cursor there (same row). */
+  appendColumn(): void {
+    this.insertColumn("right", this.doc.columns.length);
+  }
+
   deleteRows(range = this.selection()): void {
     const r = normalizeRange(range);
     this.session.apply("Delete rows", deleteRowsOps(this.doc, r.r0, r.r1));

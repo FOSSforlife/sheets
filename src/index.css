@@ -456,6 +456,39 @@ body.resizing {
   background: var(--bg);
 }
 
+/* Gutters for the add-row / add-column buttons (GridView positions the buttons over them).
+   Transparent borders/pseudo-elements so Tabulator's own padding bookkeeping is untouched. */
+.grid-root .tabulator .tabulator-tableholder .tabulator-table {
+  border-right: 40px solid transparent;
+}
+.grid-root .tabulator .tabulator-header .tabulator-headers {
+  border-right: 40px solid transparent;
+}
+.grid-root .tabulator .tabulator-tableholder::after {
+  content: "";
+  display: block;
+  height: 36px;
+}
+
+.grid-add-btn {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  background: var(--bg);
+}
+.grid-add-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  border-style: solid;
+}
+
 /* Newline marker inside strings */
 .nl {
   color: var(--muted);

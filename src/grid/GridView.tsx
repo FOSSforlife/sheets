@@ -1,5 +1,6 @@
 import { createEffect, createSignal, on, onCleanup, onMount, Show } from "solid-js";
 import { unwrap } from "solid-js/store";
+import { Plus } from "../components/ui/icons";
 import { openMenuAt, openMenuBelow } from "../components/ui/menu";
 import { formatForEdit } from "../domain/values";
 import { type ActionId, registerAction } from "../stores/keymap";
@@ -36,6 +37,10 @@ export function GridView(props: { session: TableSession }) {
   const [editor, setEditor] = createSignal<EditorRequest | null>(null);
   const [editorRect, setEditorRect] = createSignal<Rect | null>(null);
   const [editorError, setEditorError] = createSignal<string | null>(null);
+  const [addButtons, setAddButtons] = createSignal<{ column: Rect | null; row: Rect | null }>({
+    column: null,
+    row: null,
+  });
   const [rename, setRename] = createSignal<{ columnId: string; rect: Rect; error: string | null } | null>(
     null,
   );
@@ -46,6 +51,13 @@ export function GridView(props: { session: TableSession }) {
   };
 
   const doc = () => session.doc;
+
+  /** Re-measures where the add-row / add-column buttons sit (they track scrolling and resizing). */
+  function layoutAddButtons(): void {
+    if (!grid) return; // Tabulator can emit layout events while still being constructed
+    const a = grid.addButtonAnchors();
+    setAddButtons({ column: a.column && toLocal(a.column), row: a.row && toLocal(a.row) });
+  }
 
   // ---- editing ----
 
@@ -242,6 +254,7 @@ export function GridView(props: { session: TableSession }) {
       onRowHeaderContext: (_ri, e) => openMenuAt(rowItems(actions), e),
       onColumnMoved: (id, to) => actions.moveColumn(id, to),
       onColumnResized: (id, w) => actions.resizeColumn(id, w),
+      onLayout: () => layoutAddButtons(),
       onSelectionChange: (r) => {
         setRowSelection(session.id, r.r0, r.r1);
         const row = doc().rows[r.r0];
@@ -265,7 +278,12 @@ export function GridView(props: { session: TableSession }) {
     root.addEventListener("paste", onPaste);
     registerActions();
 
-    const ro = new ResizeObserver(() => grid.redraw());
+    const ro = new ResizeObserver(() => {
+      grid.redraw();
+      layoutAddButtons();
+    });
+    // Data changes can move the last row / column without a Tabulator render event (e.g. updateData).
+    onCleanup(session.subscribe(() => setTimeout(layoutAddButtons)));
     ro.observe(root);
 
     // Close the editor if its cell scrolls away; otherwise follow it.
@@ -301,6 +319,40 @@ export function GridView(props: { session: TableSession }) {
   return (
     <div ref={root} class="grid-root relative h-full w-full" data-density={settings.density}>
       <div ref={host} class="h-full w-full" />
+      <Show when={addButtons().column}>
+        {(r) => (
+          <button
+            type="button"
+            class="grid-add-btn"
+            title="Add column"
+            style={{ left: `${r().left + 4}px`, top: `${r().top + r().height / 2 - 11}px` }}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              actions.appendColumn();
+              grid.focus();
+            }}
+          >
+            <Plus size={14} />
+          </button>
+        )}
+      </Show>
+      <Show when={addButtons().row}>
+        {(r) => (
+          <button
+            type="button"
+            class="grid-add-btn"
+            title="Add row"
+            style={{ left: `${r().left + r().width / 2 - 11}px`, top: `${r().top + 4}px` }}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              actions.appendRow();
+              grid.focus();
+            }}
+          >
+            <Plus size={14} />
+          </button>
+        )}
+      </Show>
       <Show when={editor()} keyed>
         {(req) => (
           <CellEditor

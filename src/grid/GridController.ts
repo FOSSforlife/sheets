@@ -24,6 +24,8 @@ export interface GridCallbacks {
   onColumnMoved(columnId: string, toIndex: number): void;
   onColumnResized(columnId: string, width: number): void;
   onSelectionChange(range: CellRange): void;
+  /** The grid scrolled, re-rendered or resized: overlays positioned over it should re-measure. */
+  onLayout(): void;
 }
 
 const ROW_ID = "__rowId";
@@ -53,7 +55,9 @@ export class GridController {
       index: ROW_ID,
       layout: "fitData",
       height: "100%",
-      renderHorizontal: "virtual",
+      // Basic horizontal rendering: the virtual renderer owns the table's side padding, which we
+      // need free for the add-column gutter (see index.css).
+      renderHorizontal: "basic",
       reactiveData: false,
       keybindings: false,
       movableColumns: true,
@@ -189,6 +193,16 @@ export class GridController {
     };
     t.on("rangeChanged", selChanged);
     t.on("rangeAdded", selChanged);
+    const layout = () => this.cb.onLayout();
+    for (const ev of [
+      "renderComplete",
+      "scrollVertical",
+      "scrollHorizontal",
+      "columnResized",
+      "columnMoved",
+    ] as const) {
+      t.on(ev as any, layout);
+    }
   }
 
   private rowIndex(cell: CellComponent): number {
@@ -367,6 +381,35 @@ export class GridController {
   pillRect(columnId: string): DOMRect | null {
     const el = this.table.getColumn(columnId)?.getElement().querySelector(".pill");
     return el ? el.getBoundingClientRect() : null;
+  }
+
+  /**
+   * Where the "+" buttons go, in viewport coordinates: just right of the last column header, and just
+   * below the last row in the row-number column. Null when that spot is scrolled out of view.
+   */
+  addButtonAnchors(): { column: DOMRect | null; row: DOMRect | null } {
+    const holder = this.el.querySelector(".tabulator-tableholder") as HTMLElement | null;
+    const table = holder?.querySelector(".tabulator-table") as HTMLElement | null;
+    const header = this.el.querySelector(".tabulator-header") as HTMLElement | null;
+    if (!holder || !table || !header) return { column: null, row: null };
+    const view = holder.getBoundingClientRect();
+    const head = header.getBoundingClientRect();
+
+    let column: DOMRect | null = null;
+    const lastId = this.doc.columns.at(-1)?.id;
+    const lastCol = lastId ? this.table.getColumn(lastId)?.getElement() : null;
+    if (lastCol) {
+      const r = lastCol.getBoundingClientRect();
+      if (r.right >= view.left && r.right < view.right)
+        column = new DOMRect(r.right, head.top, 0, head.height);
+    }
+
+    const rowHeaderWidth =
+      (this.el.querySelector(".tabulator-col.row-header") as HTMLElement | null)?.offsetWidth ?? 48;
+    const bottom = view.top + table.offsetTop + table.offsetHeight - holder.scrollTop;
+    const row =
+      bottom >= view.top && bottom < view.bottom ? new DOMRect(view.left, bottom, rowHeaderWidth, 0) : null;
+    return { column, row };
   }
 
   visibleRowCount(): number {
