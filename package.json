@@ -1,0 +1,38 @@
+{
+  "name": "sheets",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b",
+    "lint": "biome check src",
+    "format": "biome format --write src"
+  },
+  "dependencies": {
+    "@solidjs/router": "^1.0.3",
+    "lucide-solid": "^1.71.0",
+    "papaparse": "^5.7.0",
+    "solid-js": "^1.9.19",
+    "sql.js": "^1.16.0",
+    "tabulator-tables": "^6.7.1",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.6",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/papaparse": "^5.5.2",
+    "@types/sql.js": "^1.4.11",
+    "@types/tabulator-tables": "^6.3.6",
+    "jsdom": "^31.0.0",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.7",
+    "vite-plugin-solid": "^2.11.16",
+    "vitest": "^5.1.0"
+  }
+}
