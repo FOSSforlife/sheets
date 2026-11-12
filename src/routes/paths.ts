@@ -21,3 +21,14 @@ export function absolutePath(path: string): string {
 export function reloadAtRoot(): void {
   location.replace(absolutePath("/"));
 }
+
+export type RouteTarget = { kind: "table"; tableId: string } | { kind: "settings" } | null;
+
+/** What a full URL path points at, e.g. `/sheets/t/abc` → table `abc`. Null for the app root or unknown paths. */
+export function parseLocation(pathname: string): RouteTarget {
+  const rel = pathname.startsWith(BASE_PATH) ? pathname.slice(BASE_PATH.length) : pathname;
+  const table = /^\/t\/([^/]+)\/?$/.exec(rel);
+  if (table) return { kind: "table", tableId: decodeURIComponent(table[1]!) };
+  if (/^\/settings\/?$/.test(rel)) return { kind: "settings" };
+  return null;
+}
