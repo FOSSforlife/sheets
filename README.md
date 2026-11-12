@@ -1,0 +1,1 @@
+Hand-written README incoming, for now see [PLAN.md](PLAN.md). 
