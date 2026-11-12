@@ -1,1 +1,1 @@
-Hand-written README incoming, for now see [PLAN.md](PLAN.md). 
+Hand-written README coming soon, for now see [PLAN.md](PLAN.md). 
