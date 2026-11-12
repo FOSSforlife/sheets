@@ -3,6 +3,7 @@ import { formatDateParts, formatTime } from "../../domain/dates";
 import { formatFloat } from "../../domain/numbers";
 import { DATE_FORMAT_LABELS, type DateFormat, type FloatStyle } from "../../domain/settings";
 import { downloadText, pickFile } from "../../io/files";
+import { reloadAtRoot } from "../../routes/paths";
 import { QUOTA_CHARS, usedChars } from "../../storage/kv";
 import { createBackup, resetEverything, restoreBackup } from "../../storage/repositories";
 import { resetSettings, setSettings, settings } from "../../stores/settings";
@@ -75,7 +76,7 @@ export function SettingsPage() {
     if (!ok) return;
     try {
       restoreBackup(JSON.parse(await file.text()));
-      location.replace("/");
+      reloadAtRoot();
     } catch (e) {
       toast((e as Error).message, "error");
     }
@@ -90,7 +91,7 @@ export function SettingsPage() {
     });
     if (v === null) return;
     resetEverything();
-    location.replace("/");
+    reloadAtRoot();
   };
 
   return (

@@ -7,6 +7,7 @@ import { FileUp } from "./components/ui/icons";
 import { MenuHost } from "./components/ui/MenuHost";
 import { menu } from "./components/ui/menu";
 import { Toasts } from "./components/ui/Toasts";
+import { absolutePath, tabPath } from "./routes/paths";
 import { exportTarget, importFile, importTableFromPicker } from "./services/importExport";
 import { onExternalChange } from "./storage/kv";
 import { TABLE_KEY_PREFIX } from "./storage/repositories";
@@ -51,8 +52,9 @@ function useRouteSync(): void {
   const location = useLocation();
   createEffect(() => {
     const id = ui.activeTab;
-    const path = !id ? "/" : id === SETTINGS_TAB ? "/settings" : `/t/${id}`;
-    if (location.pathname !== path) navigate(path);
+    const path = tabPath(id, SETTINGS_TAB);
+    // `location.pathname` includes the base (e.g. /sheets/t/…); `navigate` takes base-relative paths.
+    if (location.pathname.replace(/\/$/, "") !== absolutePath(path).replace(/\/$/, "")) navigate(path);
   });
 }
 

@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc -b",
     "lint": "biome check src",
-    "format": "biome format --write src"
+    "format": "biome format --write src",
+    "deploy:web": "pnpm build && rsync -rv dist/* $WEB_SERVER:$WEB_SERVER_WWW/sheets/"
   },
   "dependencies": {
     "@solidjs/router": "^1.0.3",

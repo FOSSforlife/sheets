@@ -4,6 +4,7 @@ import { Route, Router } from "@solidjs/router";
 import { render } from "solid-js/web";
 import { App } from "./App";
 import { HomeRoute } from "./routes/HomeRoute";
+import { BASE_PATH } from "./routes/paths";
 import { SettingsRoute } from "./routes/SettingsRoute";
 import { TableRoute } from "./routes/TableRoute";
 import "./stores/settings";
@@ -16,7 +17,7 @@ pruneTabs();
 
 render(
   () => (
-    <Router root={App}>
+    <Router root={App} base={BASE_PATH}>
       <Route path="/" component={HomeRoute} />
       <Route path="/t/:id" component={TableRoute} />
       <Route path="/settings" component={SettingsRoute} />

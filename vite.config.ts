@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 import solid from "vite-plugin-solid";
 
 export default defineConfig({
+  base: '/sheets/',
   plugins: [solid(), tailwindcss()],
   server: { port: 5173 },
   build: { target: "es2022" },
